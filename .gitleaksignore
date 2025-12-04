@@ -1,0 +1,23 @@
+# Gitleaks ignore file
+# Files listed here will be ignored by gitleaks scanner
+# These files are already gitignored and should not be scanned
+
+# Environment variables (gitignored, contains secrets)
+.env
+.env.local
+.env.*.local
+
+# Firebase configuration files (gitignored, contains API keys)
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Build artifacts
+build/
+.dart_tool/
+*.lock
+
+# IDE files
+.idea/
+.vscode/
+
