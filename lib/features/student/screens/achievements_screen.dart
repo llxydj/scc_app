@@ -56,8 +56,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             )
           : GridView.builder(
               padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : 3,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),
@@ -68,9 +68,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.emoji_events,
-                        size: 64,
+                        size: MediaQuery.of(context).size.width < 360 ? 48 : 64,
                         color: AppColors.accent,
                       ),
                       const SizedBox(height: 12),

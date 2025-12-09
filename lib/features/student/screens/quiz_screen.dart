@@ -413,8 +413,8 @@ class _QuizScreenState extends State<QuizScreen> with WidgetsBindingObserver {
                 children: [
                   Text(
                     currentQuestion.questionText,
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width < 360 ? 18 : 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

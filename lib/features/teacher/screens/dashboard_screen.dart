@@ -128,11 +128,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Quick Stats
@@ -183,7 +184,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
-                            height: 200,
+                            height: MediaQuery.of(context).size.height * 0.25,
                             child: BarChart(
                               BarChartData(
                                 barGroups: _subjectScores.entries.map((entry) {
@@ -269,10 +270,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                         onTap: () => context.push(AppRoutes.validation),
                       ),
                       _ActionCard(
-                        title: 'Reports',
-                        icon: Icons.analytics,
+                        title: 'Access Codes',
+                        icon: Icons.vpn_key,
                         color: AppColors.accent,
-                        onTap: () {},
+                        onTap: () => context.push(AppRoutes.accessCodes),
                       ),
                     ],
                   ),
@@ -314,6 +315,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 ],
               ),
             ),
+        ),
     );
   }
 

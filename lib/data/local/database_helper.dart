@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Incremented for quiz_progress table
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -28,11 +28,24 @@ class DatabaseHelper {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Handle database migrations here when version changes
-    // For now, version 1 is the initial version
-    // Future migrations can be added here:
-    // if (oldVersion < 2) {
-    //   await db.execute('ALTER TABLE users ADD COLUMN new_field TEXT');
-    // }
+    if (oldVersion < 2) {
+      // Add quiz_progress table for version 2
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS quiz_progress (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          quiz_id TEXT NOT NULL,
+          subject TEXT NOT NULL,
+          current_question_index INTEGER DEFAULT 0,
+          selected_answers TEXT,
+          score INTEGER DEFAULT 0,
+          elapsed_seconds INTEGER DEFAULT 0,
+          last_saved_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_quiz_progress_user ON quiz_progress(user_id, quiz_id)');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -190,6 +203,22 @@ class DatabaseHelper {
       )
     ''');
 
+    // Quiz progress table (for resume functionality)
+    await db.execute('''
+      CREATE TABLE quiz_progress (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        quiz_id TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        current_question_index INTEGER DEFAULT 0,
+        selected_answers TEXT,
+        score INTEGER DEFAULT 0,
+        elapsed_seconds INTEGER DEFAULT 0,
+        last_saved_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    ''');
+
     // Create indexes
     await db.execute('CREATE INDEX idx_users_class_code ON users(class_code)');
     await db.execute('CREATE INDEX idx_quiz_subject_grade ON quiz_questions(subject, grade_level)');
@@ -198,6 +227,7 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_progress_synced ON student_progress(is_synced)');
     await db.execute('CREATE INDEX idx_sync_queue_retry ON sync_queue(retry_count)');
     await db.execute('CREATE INDEX idx_assignments_class ON assignments(class_code)');
+    await db.execute('CREATE INDEX idx_quiz_progress_user ON quiz_progress(user_id, quiz_id)');
   }
 
   Future<void> close() async {

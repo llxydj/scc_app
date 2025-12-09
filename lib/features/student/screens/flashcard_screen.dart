@@ -107,7 +107,9 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                   child: Container(
                     key: ValueKey(_isFlipped),
                     width: MediaQuery.of(context).size.width * 0.9,
-                    height: MediaQuery.of(context).size.height * 0.5,
+                    height: MediaQuery.of(context).orientation == Orientation.portrait
+                        ? MediaQuery.of(context).size.height * 0.5
+                        : MediaQuery.of(context).size.height * 0.6,
                     decoration: BoxDecoration(
                       color: _isFlipped ? AppColors.secondary : AppColors.primary,
                       borderRadius: BorderRadius.circular(16),
@@ -124,12 +126,13 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                         padding: const EdgeInsets.all(24),
                         child: Text(
                           _isFlipped ? currentCard.back : currentCard.front,
-                          style: const TextStyle(
-                            fontSize: 24,
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width < 360 ? 18 : 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                           textAlign: TextAlign.center,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
                     ),

@@ -190,7 +190,7 @@ class _ValidationScreenState extends State<ValidationScreen> {
             ),
             const SizedBox(height: 16),
             SizedBox(
-              height: 200,
+              height: MediaQuery.of(context).size.height * 0.25,
               child: BarChart(
                 BarChartData(
                   barGroups: result.timePerQuestion.asMap().entries.map((entry) {
@@ -265,44 +265,49 @@ class _ValidationScreenState extends State<ValidationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Student Validation')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _results.isEmpty
-              ? const Center(child: Text('No quiz results to validate'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _results.length,
-                  itemBuilder: (context, index) {
-                    final result = _results[index];
-                    final status = _getVerificationStatus(result);
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _results.isEmpty
+                ? const Center(child: Text('No quiz results to validate'))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _results.length,
+                    itemBuilder: (context, index) {
+                      final result = _results[index];
+                      final status = _getVerificationStatus(result);
 
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        leading: Icon(
-                          _getStatusIcon(status),
-                          color: _getStatusColor(status),
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          leading: Icon(
+                            _getStatusIcon(status),
+                            color: _getStatusColor(status),
+                          ),
+                          title: Text('Student ${result.userId.substring(0, 8)}'),
+                          subtitle: Text(
+                            'Score: ${result.score}/${result.totalQuestions} | '
+                            'Time: ${result.timeTaken}s | '
+                            'Pauses: ${result.totalPauses}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                          trailing: status == 'flagged'
+                              ? IconButton(
+                                  icon: const Icon(Icons.refresh),
+                                  tooltip: 'Revalidate',
+                                  onPressed: () => _requestRevalidation(
+                                    result.userId,
+                                    result.quizId,
+                                  ),
+                                )
+                              : null,
+                          onTap: () => _showDetailedView(result),
                         ),
-                        title: Text('Student ${result.userId.substring(0, 8)}'),
-                        subtitle: Text(
-                          'Score: ${result.score}/${result.totalQuestions} | '
-                          'Time: ${result.timeTaken}s | '
-                          'Pauses: ${result.totalPauses}',
-                        ),
-                        trailing: status == 'flagged'
-                            ? ElevatedButton(
-                                onPressed: () => _requestRevalidation(
-                                  result.userId,
-                                  result.quizId,
-                                ),
-                                child: const Text('Revalidate'),
-                              )
-                            : null,
-                        onTap: () => _showDetailedView(result),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+        ),
     );
   }
 }

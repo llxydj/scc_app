@@ -14,6 +14,7 @@ import 'features/teacher/screens/create_content_screen.dart';
 import 'features/teacher/screens/upload_file_screen.dart';
 import 'features/teacher/screens/validation_screen.dart';
 import 'features/teacher/screens/assign_module_screen.dart';
+import 'features/teacher/screens/access_codes_screen.dart';
 import 'features/parent/screens/dashboard_screen.dart';
 import 'features/shared/screens/settings_screen.dart';
 
@@ -112,6 +113,10 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: AppRoutes.validation,
       builder: (context, state) => const ValidationScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.accessCodes,
+      builder: (context, state) => const AccessCodesScreen(),
     ),
     GoRoute(
       path: '/teacher/assign-module',

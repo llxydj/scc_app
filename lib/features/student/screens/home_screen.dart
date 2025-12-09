@@ -102,13 +102,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          _buildHomeTab(),
-          _buildProgressTab(),
-          _buildAchievementsTab(),
-        ],
+      body: SafeArea(
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _buildHomeTab(),
+            _buildProgressTab(),
+            _buildAchievementsTab(),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -200,11 +202,16 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
-                          title: Text(assignment.title),
+                          title: Text(
+                            assignment.title,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
                           subtitle: Text(
                             assignment.dueDate != null
                                 ? 'Due: ${Formatters.formatDate(assignment.dueDate!)}'
                                 : 'No due date',
+                            overflow: TextOverflow.ellipsis,
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: () {

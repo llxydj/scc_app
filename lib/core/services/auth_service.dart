@@ -105,21 +105,51 @@ class AuthService {
   Future<UserModel> loginParent(String accessCode) async {
     try {
       final db = await _dbHelper.database;
-      final users = await db.query(
+      
+      // Find student with this access code
+      final students = await db.query(
         'users',
         where: 'parent_access_code = ? AND role = ?',
-        whereArgs: [accessCode, 'parent'],
+        whereArgs: [accessCode, 'student'],
         limit: 1,
       );
 
-      if (users.isEmpty) {
+      if (students.isEmpty) {
         throw AuthenticationException('Invalid access code');
       }
 
-      final userData = users.first;
-      final user = UserModel.fromJson(Map<String, dynamic>.from(userData));
-      await _sessionService.saveSession(user);
-      return user;
+      final studentData = students.first;
+      final studentId = studentData['id'] as String;
+      
+      // Find or create parent account linked to this student
+      final parents = await db.query(
+        'users',
+        where: 'student_id = ? AND role = ?',
+        whereArgs: [studentId, 'parent'],
+        limit: 1,
+      );
+
+      UserModel parentUser;
+      if (parents.isEmpty) {
+        // Create new parent account
+        final parentId = _uuid.v4();
+        final now = DateTime.now();
+        parentUser = UserModel(
+          id: parentId,
+          name: 'Parent of ${studentData['name']}',
+          role: 'parent',
+          studentId: studentId,
+          parentAccessCode: accessCode,
+          createdAt: now,
+          updatedAt: now,
+        );
+        await db.insert('users', parentUser.toJson());
+      } else {
+        parentUser = UserModel.fromJson(Map<String, dynamic>.from(parents.first));
+      }
+
+      await _sessionService.saveSession(parentUser);
+      return parentUser;
     } catch (e) {
       throw AuthenticationException('Login failed: ${e.toString()}');
     }
@@ -207,6 +237,15 @@ class AuthService {
       );
 
       await db.insert('users', user.toJson());
+      
+      // Send verification email
+      try {
+        await credential.user?.sendEmailVerification();
+      } catch (e) {
+        // Email verification is optional, don't fail registration
+        print('Failed to send verification email: $e');
+      }
+      
       await _sessionService.saveSession(user);
       return user;
     } on FirebaseAuthException catch (e) {

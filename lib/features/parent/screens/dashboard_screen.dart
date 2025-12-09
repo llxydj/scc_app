@@ -68,9 +68,10 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Parent Dashboard')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
@@ -126,7 +127,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                               const SizedBox(width: 16),
                               Text(
                                 Formatters.formatDate(result.completedAt),
-                                style: const TextStyle(fontSize: 12),
+                                style: const TextStyle(fontSize: 10),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -137,6 +139,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

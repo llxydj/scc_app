@@ -16,6 +16,7 @@ class AppRoutes {
   static const String uploadFile = '/teacher/upload-file';
   static const String validation = '/teacher/validation';
   static const String classProgress = '/teacher/class-progress';
+  static const String accessCodes = '/teacher/access-codes';
   
   // Parent
   static const String parentDashboard = '/parent/dashboard';

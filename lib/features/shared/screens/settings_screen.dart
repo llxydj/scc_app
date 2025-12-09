@@ -19,8 +19,9 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        children: [
+      body: SafeArea(
+        child: ListView(
+          children: [
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Profile'),
@@ -50,6 +51,7 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => _handleLogout(context),
           ),
         ],
+        ),
       ),
     );
   }

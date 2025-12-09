@@ -95,7 +95,7 @@ class SyncService {
     }
   }
 
-  // Sync single item
+  // Sync single item with conflict resolution
   Future<void> _syncItem(Database db, Map<String, dynamic> item) async {
     final tableName = item['table_name'] as String;
     final recordId = item['record_id'] as String;
@@ -106,34 +106,74 @@ class SyncService {
 
     final data = jsonDecode(dataJson) as Map<String, dynamic>;
 
-    switch (tableName) {
-      case 'users':
-        await _syncUser(operation, data);
-        break;
-      case 'student_progress':
-        await _syncStudentProgress(operation, data);
-        break;
-      case 'quiz_questions':
-        await _syncQuizQuestion(operation, data);
-        break;
-      case 'flashcards':
-        await _syncFlashcard(operation, data);
-        break;
-      case 'user_badges':
-        await _syncUserBadge(operation, data);
-        break;
-      case 'assignments':
-        await _syncAssignment(operation, data);
-        break;
-    }
+    try {
+      switch (tableName) {
+        case 'users':
+          await _syncUser(operation, data);
+          break;
+        case 'student_progress':
+          await _syncStudentProgress(operation, data);
+          break;
+        case 'quiz_questions':
+          await _syncQuizQuestion(operation, data);
+          break;
+        case 'flashcards':
+          await _syncFlashcard(operation, data);
+          break;
+        case 'user_badges':
+          await _syncUserBadge(operation, data);
+          break;
+        case 'assignments':
+          await _syncAssignment(operation, data);
+          break;
+      }
 
-    // Mark as synced in local DB
-    await db.update(
-      tableName,
-      {'is_synced': 1, 'synced_at': DateTime.now().toIso8601String()},
-      where: 'id = ?',
-      whereArgs: [recordId],
-    );
+      // Mark as synced in local DB
+      await db.update(
+        tableName,
+        {'is_synced': 1, 'synced_at': DateTime.now().toIso8601String()},
+        where: 'id = ?',
+        whereArgs: [recordId],
+      );
+    } catch (e) {
+      // Conflict resolution: Use last-write-wins strategy
+      if (e.toString().contains('conflict') || e.toString().contains('permission')) {
+        // For conflicts, merge data (last write wins)
+        final resolved = await _resolveConflict(tableName, recordId, data);
+        if (resolved) {
+          // Mark as synced after successful conflict resolution
+          await db.update(
+            tableName,
+            {'is_synced': 1, 'synced_at': DateTime.now().toIso8601String()},
+            where: 'id = ?',
+            whereArgs: [recordId],
+          );
+        }
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  // Simple conflict resolution: last-write-wins
+  Future<bool> _resolveConflict(String tableName, String recordId, Map<String, dynamic> data) async {
+    try {
+      final docRef = _firestore.collection(tableName).doc(recordId);
+      final doc = await docRef.get();
+      
+      if (doc.exists) {
+        // Merge with existing data, local data takes precedence
+        await docRef.set(data, SetOptions(merge: true));
+      } else {
+        // Create new document
+        await docRef.set(data);
+      }
+      return true;
+    } catch (e) {
+      // If conflict resolution fails, log and continue
+      print('Conflict resolution failed for $tableName/$recordId: $e');
+      return false;
+    }
   }
 
   Future<void> _syncUser(String operation, Map<String, dynamic> data) async {

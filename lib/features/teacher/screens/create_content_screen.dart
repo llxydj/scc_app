@@ -135,9 +135,10 @@ class _CreateContentScreenState extends State<CreateContentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Create Content')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -363,6 +364,7 @@ class _CreateContentScreenState extends State<CreateContentScreen> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );
