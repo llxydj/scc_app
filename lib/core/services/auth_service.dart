@@ -135,6 +135,19 @@ class AuthService {
   }) async {
     try {
       final db = await _dbHelper.database;
+      
+      // Check if username already exists
+      final existingUsers = await db.query(
+        'users',
+        where: '(name = ? OR email = ?) AND role = ?',
+        whereArgs: [username, username, 'student'],
+        limit: 1,
+      );
+      
+      if (existingUsers.isNotEmpty) {
+        throw AuthenticationException('Username already taken. Please choose a different username.');
+      }
+      
       final userId = _uuid.v4();
       final now = DateTime.now();
 

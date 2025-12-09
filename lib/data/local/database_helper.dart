@@ -22,7 +22,17 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Handle database migrations here when version changes
+    // For now, version 1 is the initial version
+    // Future migrations can be added here:
+    // if (oldVersion < 2) {
+    //   await db.execute('ALTER TABLE users ADD COLUMN new_field TEXT');
+    // }
   }
 
   Future<void> _createDB(Database db, int version) async {

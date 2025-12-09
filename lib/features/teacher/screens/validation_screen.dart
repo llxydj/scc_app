@@ -37,10 +37,9 @@ class _ValidationScreenState extends State<ValidationScreen> {
       if (user?.classCode != null) {
         _selectedClassCode = user!.classCode;
         // Load results for this class
-        // In a real app, filter by class_code
-        final allResults = await _quizRepository.getUserResults(''); // Get all for demo
+        final classResults = await _quizRepository.getResultsByClassCode(user.classCode!);
         setState(() {
-          _results = allResults;
+          _results = classResults;
           _isLoading = false;
         });
       } else {

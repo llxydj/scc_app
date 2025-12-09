@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sqflite/sqflite.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../data/repositories/quiz_repository.dart';
+import '../../../data/local/database_helper.dart';
 import '../../../core/services/auth_service.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class TeacherDashboardScreen extends StatefulWidget {
 class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   final _authService = AuthService();
   final _quizRepository = QuizRepository();
+  final _dbHelper = DatabaseHelper.instance;
   String? _classCode;
   int _totalStudents = 0;
   int _activeToday = 0;
@@ -34,25 +37,82 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       final user = await _authService.getCurrentUser();
       if (user?.classCode != null) {
         _classCode = user!.classCode;
-        // In a real app, load actual stats from database
-        // For now, use placeholder data
+        final db = await _dbHelper.database;
+        
+        // Get total students in class
+        final studentsResult = await db.rawQuery(
+          'SELECT COUNT(*) as count FROM users WHERE class_code = ? AND role = ?',
+          [_classCode, 'student'],
+        );
+        final totalStudents = studentsResult.first['count'] as int? ?? 0;
+        
+        // Get active students today (active in last 24 hours)
+        final yesterday = DateTime.now().subtract(const Duration(days: 1)).toIso8601String();
+        final activeResult = await db.rawQuery(
+          'SELECT COUNT(DISTINCT user_id) as count FROM student_progress WHERE completed_at >= ?',
+          [yesterday],
+        );
+        final activeToday = activeResult.first['count'] as int? ?? 0;
+        
+        // Calculate average score from all quiz results
+        final avgScoreResult = await db.rawQuery(
+          '''
+          SELECT AVG(CAST(score AS FLOAT) / CAST(total_questions AS FLOAT) * 100) as avg_score
+          FROM student_progress
+          WHERE total_questions > 0
+          ''',
+        );
+        final avgScore = (avgScoreResult.first['avg_score'] as num?)?.toDouble() ?? 0.0;
+        
+        // Calculate average scores per subject
+        final subjectScoresResult = await db.rawQuery(
+          '''
+          SELECT subject, AVG(CAST(score AS FLOAT) / CAST(total_questions AS FLOAT) * 100) as avg_score
+          FROM student_progress
+          WHERE subject IS NOT NULL AND total_questions > 0
+          GROUP BY subject
+          ''',
+        );
+        
+        final subjectScores = <String, double>{};
+        for (final row in subjectScoresResult) {
+          final subject = row['subject'] as String?;
+          final score = (row['avg_score'] as num?)?.toDouble();
+          if (subject != null && score != null) {
+            subjectScores[subject] = score;
+          }
+        }
+        
+        // Ensure all subjects have values (default to 0 if no data)
+        final allSubjects = ['Math', 'Science', 'English', 'Filipino'];
+        for (final subject in allSubjects) {
+          subjectScores.putIfAbsent(subject, () => 0.0);
+        }
+        
         setState(() {
-          _totalStudents = 32;
-          _activeToday = 28;
-          _avgScore = 85.0;
-          _subjectScores = {
-            'Math': 88.0,
-            'Science': 85.0,
-            'English': 82.0,
-            'Filipino': 85.0,
-          };
+          _totalStudents = totalStudents;
+          _activeToday = activeToday;
+          _avgScore = avgScore;
+          _subjectScores = subjectScores;
           _isLoading = false;
         });
       } else {
         setState(() => _isLoading = false);
       }
     } catch (e) {
-      setState(() => _isLoading = false);
+      // Fallback to default values on error
+      setState(() {
+        _totalStudents = 0;
+        _activeToday = 0;
+        _avgScore = 0.0;
+        _subjectScores = {
+          'Math': 0.0,
+          'Science': 0.0,
+          'English': 0.0,
+          'Filipino': 0.0,
+        };
+        _isLoading = false;
+      });
     }
   }
 

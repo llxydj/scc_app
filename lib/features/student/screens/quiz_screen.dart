@@ -12,6 +12,7 @@ import '../../../core/services/analytics_service.dart';
 import '../../../core/utils/device_info.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/answer_feedback.dart';
+import '../../../core/widgets/points_animation.dart';
 import '../../../data/models/quiz_model.dart';
 import '../../../data/repositories/quiz_repository.dart';
 import '../../../core/services/auth_service.dart';

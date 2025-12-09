@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import '../data/local/database_helper.dart';
 import '../data/models/user_model.dart';
 import '../data/models/badge_model.dart';
+import 'analytics_service.dart';
 import 'package:uuid/uuid.dart';
 
 class PointsService {

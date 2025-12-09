@@ -181,5 +181,47 @@ class QuizRepository {
       return [];
     }
   }
+
+  // Get quiz results by class code (for teachers)
+  Future<List<QuizResult>> getResultsByClassCode(String classCode) async {
+    try {
+      final db = await _dbHelper.database;
+      
+      // Join with users table to filter by class_code
+      final results = await db.rawQuery('''
+        SELECT sp.* FROM student_progress sp
+        INNER JOIN users u ON sp.user_id = u.id
+        WHERE u.class_code = ?
+        ORDER BY sp.completed_at DESC
+      ''', [classCode]);
+
+      return results.map((data) {
+        final timePerQuestionJson = data['time_per_question'] as String?;
+        final eventsJson = data['events'] as String?;
+
+        return QuizResult(
+          id: data['id'] as String,
+          userId: data['user_id'] as String,
+          quizId: data['quiz_id'] as String,
+          subject: data['subject'] as String?,
+          score: data['score'] as int,
+          totalQuestions: data['total_questions'] as int,
+          timeTaken: data['time_taken'] as int? ?? 0,
+          timePerQuestion: timePerQuestionJson != null
+              ? List<int>.from(jsonDecode(timePerQuestionJson))
+              : [],
+          completedAt: DateTime.parse(data['completed_at'] as String),
+          hashSignature: data['hash_signature'] as String,
+          deviceId: data['device_id'] as String,
+          isVerified: data['is_verified'] as int? ?? 0,
+          isSynced: data['is_synced'] as int? ?? 0,
+          totalPauses: data['total_pauses'] as int? ?? 0,
+          events: eventsJson != null ? List<String>.from(jsonDecode(eventsJson)) : [],
+        );
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
 }
 
