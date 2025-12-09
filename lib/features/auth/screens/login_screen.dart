@@ -91,46 +91,79 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
-                const Icon(
-                  Icons.school,
-                  size: 80,
-                  color: AppColors.primary,
+                const SizedBox(height: 20),
+                // Logo/Brand Section
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.school,
+                    size: 64,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 const Text(
                   'SCC Learning App',
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
+                    letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Learn, Practice, Excel',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
                 
-                // Role Selection
-                SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'student', label: Text('Student')),
-                    ButtonSegment(value: 'teacher', label: Text('Teacher')),
-                    ButtonSegment(value: 'parent', label: Text('Parent')),
-                  ],
-                  selected: {_selectedRole},
-                  onSelectionChanged: (Set<String> newSelection) {
-                    setState(() {
-                      _selectedRole = newSelection.first;
-                    });
-                  },
+                // Role Selection with better styling
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(
+                        value: 'student',
+                        label: Text('Student'),
+                        icon: Icon(Icons.person, size: 18),
+                      ),
+                      ButtonSegment(
+                        value: 'teacher',
+                        label: Text('Teacher'),
+                        icon: Icon(Icons.school, size: 18),
+                      ),
+                      ButtonSegment(
+                        value: 'parent',
+                        label: Text('Parent'),
+                        icon: Icon(Icons.family_restroom, size: 18),
+                      ),
+                    ],
+                    selected: {_selectedRole},
+                    onSelectionChanged: (Set<String> newSelection) {
+                      setState(() {
+                        _selectedRole = newSelection.first;
+                      });
+                    },
+                    style: SegmentedButton.styleFrom(
+                      selectedBackgroundColor: AppColors.primary,
+                      selectedForegroundColor: Colors.white,
+                    ),
+                  ),
                 ),
                 
                 const SizedBox(height: 32),
@@ -208,27 +241,62 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 const SizedBox(height: 32),
                 
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                // Login Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleLogin,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Login'),
                 ),
                 
                 const SizedBox(height: 16),
                 
-                TextButton(
-                  onPressed: () {
-                    context.push(AppRoutes.onboarding);
-                  },
-                  child: const Text('New User? Register Here'),
+                // Register Link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Don\'t have an account? ',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        context.push(AppRoutes.onboarding);
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      child: const Text(
+                        'Register Here',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
